@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+  <_name>Dead leaves pattern</_name>
+  <id>jlecoeur.inkscape.extension.dead_leaves</id>
+
+  <dependency type="executable" location="extensions">dead_leaves.py</dependency>
+  <dependency type="executable" location="extensions">inkpyration.py</dependency>
+  <dependency type="executable" location="extensions">inkex.py</dependency>
+  <dependency type="executable" location="extensions">color_utils.py</dependency>
+
+
+  <_param name="about" type="description">Creates a pattern with circular leaves.</_param>
+
+  <!-- <param name="fileeee" type="string" _gui-text="Chemin vers le fichier CSV"></param> -->
+  <param name="unit" _gui-text="Unit" type="optiongroup" appearance="minimal">
+    <option value="mm">mm</option>
+    <option value="cm">cm</option>
+    <option value="in">in</option>
+    <option value="px">px</option>
+  </param>
+ 
+  <param name="sizey" type="float" min="1" max="1000000" precision="1" _gui-text="Image size (horizontal)">300</param>
+  <param name="sizex" type="float" min="1" max="1000000" precision="1" _gui-text="Image size (vertical)">60</param>
+  <param name="radmin" type="float" min="0" max="1000000" _gui-text="Minimum circle radius">0.5</param>
+  <param name="radmax" type="float" min="0" max="1000000" _gui-text="Maximum circle radius">60</param>
+  <param name="iter" type="int" min="0" max="1000000" _gui-text="Number of circles">10000</param>
+  <param name="alpha" type="int" min="-10" max="-1" _gui-text="Alpha (power law distribution)">-2</param>
+  <param name="colors" type="int" min="2" max="125" _gui-text="Number of grayscales">3</param>
+  <param name="color" type="color" _gui-text="Color">#000000</param>
+  <param name="color2" type="color" _gui-text="Color">#000000</param>
+
+  <effect needs-live-preview="false">
+    <object-type>all</object-type>
+    <effects-menu>
+      <submenu _name="Bee Patterns"/>
+    </effects-menu>
+  </effect>
+  <script>
+    <command reldir="extensions" interpreter="python">dead_leaves.py</command>
+  </script>
+</inkscape-extension>
