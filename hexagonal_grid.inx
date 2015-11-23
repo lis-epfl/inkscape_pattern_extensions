@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+  <_name>Hexagonal grid</_name>
+  <id>jlecoeur.inkscape.extension.hexagonal_grid</id>
+
+  <dependency type="executable" location="extensions">hexagonal_grid.py</dependency>
+  <dependency type="executable" location="extensions">inkpyration.py</dependency>
+  <dependency type="executable" location="extensions">inkex.py</dependency>
+  <dependency type="executable" location="extensions">color_utils.py</dependency>
+
+
+  <_param name="about" type="description">Draws an hexagonal grid.</_param>
+  
+  <param name="unit" _gui-text="Unit" type="optiongroup" appearance="minimal">
+    <option value="mm">mm</option>
+    <option value="cm">cm</option>
+    <option value="in">in</option>
+    <option value="px">px</option>
+  </param>
+ 
+  <param name="sizey" type="float" min="1" max="1000000" precision="1" _gui-text="Image size (horizontal)">300</param>
+  <param name="sizex" type="float" min="1" max="1000000" precision="1" _gui-text="Image size (vertical)">60</param>
+
+  <param name="grid_size" type="float" min="0" max="1000000" _gui-text="Grid size (distance between points)">100.0</param>
+  <param name="marker_size" type="float" min="0" max="1000000" _gui-text="Marker size">1.0</param>
+  <param name="offsety" type="float" min="0" max="1000000" _gui-text="Horizontal offset">0.0</param>
+  <param name="offsetx" type="float" min="0" max="1000000" _gui-text="Vertical offset">0.0</param>    
+
+  <effect needs-live-preview="false">
+    <object-type>all</object-type>
+    <effects-menu>
+      <submenu _name="Bee Patterns"/>
+    </effects-menu>
+  </effect>
+
+  <script>
+    <command reldir="extensions" interpreter="python">hexagonal_grid.py</command>
+  </script>
+</inkscape-extension>
