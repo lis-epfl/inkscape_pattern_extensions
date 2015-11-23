@@ -17,14 +17,18 @@ import numpy as np
 _ = gettext.gettext
 
 def rand_power(alpha, limits):
-    if alpha >= 0:
+    """
+    Generate random value folowing a random distribution 1/x**alpha with alpha < -1 
+    """
+    if alpha >= -1:
         return 0
     ok = False
     while not ok:
-        val = limits[0] * pow(np.random.rand(), 1. / alpha)
+        val = limits[0] * pow(np.random.rand(), 1. / (alpha+1))
         if val <= limits[1]:
             ok = True
     return val
+
 
 class DeadLeaveEffect(inkex.Effect):
     """
@@ -33,6 +37,9 @@ class DeadLeaveEffect(inkex.Effect):
 
     def __init__(self):
         inkex.Effect.__init__(self)
+        self.OptionParser.add_option("--tab",
+                action="store", type="string",
+                dest="tab")  
         self.OptionParser.add_option('-u', '--unit',
                 action='store',type='string',
                 dest='unit',default='mm',help='Unit')
@@ -56,14 +63,22 @@ class DeadLeaveEffect(inkex.Effect):
                 action="store", type="int",
                 dest="iter", default=10000,
                 help="Number of circles")
-        self.OptionParser.add_option("-a", "--alpha",
+        self.OptionParser.add_option("--is_periodic",
+                action="store", type="inkbool",
+                dest="is_periodic", default=False,
+                help="Is periodic")
+        self.OptionParser.add_option("--periodx",
+                action="store", type="float",
+                dest="periodx", default=300.0,
+                help="Period (horizontal)")
+        self.OptionParser.add_option("--periody",
+                action="store", type="float",
+                dest="periody", default=60.0,
+                help="Period (vertical)")
+        self.OptionParser.add_option("-c", "--ncolors",
                 action="store", type="int",
-                dest="alpha", default=-2,
-                help="Alpha (power law distribution)")
-        self.OptionParser.add_option("-c", "--colors",
-                action="store", type="int",
-                dest="colors", default=3,
-                help="Number of grayscales")
+                dest="ncolors", default=3,
+                help="Number of colors")
         self.OptionParser.add_option("-w", "--color",
                 action="store", type="string",
                 dest="color", default="0",
@@ -85,29 +100,56 @@ class DeadLeaveEffect(inkex.Effect):
         self.validate_inputs()
 
         unit = self.options.unit
-        image_size = inkex.unittouu( str(self.options.sizex) + unit), inkex.unittouu( str(self.options.sizey) + unit)
-        size_limits = inkex.unittouu( str(self.options.radmin) + unit), inkex.unittouu( str(self.options.radmax) +unit)
+        image_size = self.unittouu( str(self.options.sizex) + unit), self.unittouu( str(self.options.sizey) + unit)
+        period = self.unittouu( str(self.options.periodx) + unit), self.unittouu( str(self.options.periody) + unit)
+        size_limits = self.unittouu( str(self.options.radmin) + unit), self.unittouu( str(self.options.radmax) +unit)
         num_iter = self.options.iter
-        alpha = self.options.alpha
-        colors = self.options.colors
-        rgb = HTMLColorToRGB(getColorString(self.options.color))
-        hsv = colorsys.rgb_to_hsv(rgb[0], rgb[1], rgb[2])
-        rgb2 = HTMLColorToRGB(getColorString(self.options.color2))
-        hsv2 = colorsys.rgb_to_hsv(rgb2[0], rgb2[1], rgb2[2])
+        ncolors = self.options.ncolors
+        rgba = HTMLColorToRGBA(getColorString(self.options.color))
+        rgba2 = HTMLColorToRGBA(getColorString(self.options.color2))
+        
+        alpha = rgba[3]
+        alpha2 = rgba2[3]
+        hsva = colorsys.rgb_to_hsv(rgba[0], rgba[1], rgba[2]) + (rgba[3],)
+        hsva2 = colorsys.rgb_to_hsv(rgba2[0], rgba2[1], rgba2[2]) + (rgba2[3],)
 
+        hsva_shades = get_hsva_shades(ncolors, hsva, hsva2)
+        
         svg = self.document.getroot()
         drawing = Drawing(svg)
 
-        shades = get_hsv_shades(colors, hsv, hsv2)
-
         for _ in range(num_iter):
-            pos = [np.random.rand() * image_size[1],
-                   np.random.rand() * image_size[0]]
-            size = rand_power(alpha, size_limits)
-            this_hsv = shades[np.random.randint(0, colors)]
-            this_rgb = colorsys.hsv_to_rgb(this_hsv[0], this_hsv[1], this_hsv[2])
-            drawing.createCircle(pos, size, width=0, 
-                                fill=RGBToHTMLColor(this_rgb))
+            size = rand_power(-3, size_limits)
+            this_hsva = hsva_shades[np.random.randint(0, ncolors)]
+            this_rgb = colorsys.hsv_to_rgb(this_hsva[0], this_hsva[1], this_hsva[2])
+            
+            if self.options.is_periodic == False:
+                pos = [ np.random.rand() * image_size[1],
+                        np.random.rand() * image_size[0]]
+                drawing._createCircle(  pos, 
+                                        size, 
+                                        style={ "fill-opacity":this_hsva[3]/255.0,
+                                            'width':0, 
+                                            'fill':RGBToHTMLColor(this_rgb) }
+                                        )
+            elif self.options.is_periodic == True:
+                pos = [ np.random.rand() * period[1],
+                        np.random.rand() * period[0] ]
+                # Add periodic circle if necessary
+                for periodic_pos in [ [pos[0] + i*period[1], pos[1] + j*period[0]] 
+                                        for i in np.arange(-1, 1 + image_size[1]//period[1])
+                                        for j in np.arange(-1, 1 + image_size[0]//period[0])
+                                    ]:
+                    # test if the circle is visible in the document
+                    if -size < periodic_pos[0] < image_size[1] + size: 
+                        if -size < periodic_pos[1] < image_size[0] + size:
+                            # Draw circle
+                            drawing._createCircle(  periodic_pos, 
+                                                    size, 
+                                                    style={ "fill-opacity":this_hsva[3]/255.0,
+                                                            'width':0, 
+                                                            'fill':RGBToHTMLColor(this_rgb) }
+                                                    ) 
 
 if __name__ == '__main__':
     effect = DeadLeaveEffect()

@@ -70,8 +70,8 @@ class RandCheckEffect(inkex.Effect):
         self.validate_inputs()
 
         unit = self.options.unit
-        image_size = inkex.unittouu( str(self.options.sizey) + unit), inkex.unittouu( str(self.options.sizex) + unit)
-        square_size = inkex.unittouu( str(self.options.ssizey) + unit), inkex.unittouu( str(self.options.ssizex) + unit)
+        image_size = self.unittouu( str(self.options.sizey) + unit), self.unittouu( str(self.options.sizex) + unit)
+        square_size = self.unittouu( str(self.options.ssizey) + unit), self.unittouu( str(self.options.ssizex) + unit)
         colors = self.options.colors
         rgb = HTMLColorToRGB(getColorString(self.options.color))
         hsv = colorsys.rgb_to_hsv(rgb[0], rgb[1], rgb[2])

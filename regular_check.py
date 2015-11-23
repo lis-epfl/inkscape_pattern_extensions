@@ -107,8 +107,8 @@ class RegCheckEffect(inkex.Effect):
         self.validate_inputs()
 
         unit = self.options.unit
-        image_size = inkex.unittouu( str(self.options.sizey) + unit), inkex.unittouu( str(self.options.sizex) + unit)
-        square_size = inkex.unittouu( str(self.options.ssizey) + unit), inkex.unittouu( str(self.options.ssizex) + unit)
+        image_size = self.unittouu( str(self.options.sizey) + unit), self.unittouu( str(self.options.sizex) + unit)
+        square_size = self.unittouu( str(self.options.ssizey) + unit), self.unittouu( str(self.options.ssizex) + unit)
         rgb = HTMLColorToRGB(getColorString(self.options.color))
         rgb2 = HTMLColorToRGB(getColorString(self.options.color2))
 
